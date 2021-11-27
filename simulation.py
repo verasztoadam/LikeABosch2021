@@ -1,6 +1,5 @@
 from gui import *
 from sim_constants import SensorLocations
-import numpy
 import math
 
 
@@ -31,6 +30,7 @@ class Sensor:
         self.cross_val_r = 0
         self.x = car_pos[0] + SensorLocations.list[index][0]
         self.y = car_pos[1] + SensorLocations.list[index][1]
+        self.pos = (self.x, self.y)
         """ 
         Direct echoes: list of tuples [(x1,y1), (x2, y2)]
         Cross echo: [x1,y1,x2,y2] - (echopoint, other sensor)        
@@ -60,15 +60,15 @@ class Sensor:
         """ Calculating travel distances for cross-echoes """
         if self.cross_echo_l:
             self.cross_val_l = distance(self.x, self.y, self.cross_echo_l[0], self.cross_echo_l[1]) \
-                              + distance(self.cross_echo_l[0], self.cross_echo_l[1],
-                                         self.cross_echo_l[2], self.cross_echo_l[3])
+                               + distance(self.cross_echo_l[0], self.cross_echo_l[1],
+                                          self.cross_echo_l[2], self.cross_echo_l[3])
         else:
             self.cross_val_l = 0
 
         if self.cross_echo_r:
             self.cross_val_r = distance(self.x, self.y, self.cross_echo_r[0], self.cross_echo_r[1]) \
-                              + distance(self.cross_echo_r[0], self.cross_echo_r[1],
-                                         self.cross_echo_r[2], self.cross_echo_r[3])
+                               + distance(self.cross_echo_r[0], self.cross_echo_r[1],
+                                          self.cross_echo_r[2], self.cross_echo_r[3])
         else:
             self.cross_val_r = 0
 
@@ -97,12 +97,23 @@ class Model:
         self.sensor_values()
 
     def calc_positions(self):
+        """ Updating sensor coordinates """
         for i, sensor in enumerate(self.sensor_list):
             sensor.update_loc(self.car_pos)
+
+        """ Creating internal representations of GUI entities """
+        #self.rect_list = []
+        #for i, gui_rect in enumerate(gui.rect_list):
+        #    self.rect_list[i] = Rectangle(gui_rect.pos, gui_rect.width, gui_rect.length, gui_rect.angle)
+
+        # self.circle_list = []
+        # for i, gui_circle in enumerate(gui.circle_list):
+        #    self.circle_list[i] = Circle(gui_circle.center, gui_circle.radius)
 
     def calc_rays(self):
         """ Direct echoes: """
         self.direct_list = []
+
         for i, sensor in enumerate(self.sensor_list):
             for j, rect in enumerate(self.rect_list):
                 direct_point = rect_solve(sensor, rect)
@@ -129,7 +140,7 @@ class Model:
                     self.cross_list.append([(sensor.x, sensor.y), cross_point,
                                             (self.sensor_list[i + 1].x, self.sensor_list[i + 1].y)])
                     sensor.cross_echo_r = [cross_point[0], cross_point[1],
-                                          self.sensor_list[i + 1].x, self.sensor_list[i + 1].y]
+                                           self.sensor_list[i + 1].x, self.sensor_list[i + 1].y]
                     self.sensor_list[i + 1].cross_echo_l = [cross_point[0], cross_point[1], sensor.x, sensor.y]
 
             """ For circles: """
@@ -140,7 +151,7 @@ class Model:
                     self.cross_list.append([(sensor.x, sensor.y), cross_point,
                                             (self.sensor_list[i + 1].x, self.sensor_list[i + 1].y)])
                     sensor.cross_echo_r = [cross_point[0], cross_point[1],
-                                          self.sensor_list[i + 1].x, self.sensor_list[i + 1].y]
+                                           self.sensor_list[i + 1].x, self.sensor_list[i + 1].y]
                     self.sensor_list[i + 1].cross_echo_l = [cross_point[0], cross_point[1], sensor.x, sensor.y]
 
     def sensor_values(self):
@@ -154,8 +165,10 @@ def distance(x1, y1, x2, y2):
     d = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
     return d
 
+
 def distance_p(point1, point2):
     return distance(point1[0], point1[1], point2[0], point2[1])
+
 
 def normal_vect(x1, y1, x2, y2):
     """ Right side normal for a vector from P1 to P2 """
@@ -305,6 +318,7 @@ def circle_solve(sensor, circle):
     else:
         return 0, 0
 
+
 def mirror_point(point, line):
     """ Mirroring a point to a P1(x1,y1) - P2(x2, y2) line"""
     x1, y1 = line[0][0], line[0][1]
@@ -321,7 +335,6 @@ def mirror_point(point, line):
         return 0, 0
 
 
-
 def cross_rectsolve(sensor1, sensor2, rectangle):
     """ Cross-echo point of two adjacent sensors on a rectangle """
     sensor_p1 = (sensor1.x, sensor1.y)
@@ -333,7 +346,7 @@ def cross_rectsolve(sensor1, sensor2, rectangle):
         mirror_s1 = mirror_point(sensor_p1, line_AD)
         mirror_s2 = mirror_point(sensor_p2, line_AD)
         if (mirror_s1 != (0, 0)) & (mirror_s2 != (0, 0)):
-            cross_echo_p = line_intersection((sensor_p1, mirror_s2), (sensor_p2,  mirror_s1))
+            cross_echo_p = line_intersection((sensor_p1, mirror_s2), (sensor_p2, mirror_s1))
             if range_check(sensor1, cross_echo_p) & range_check(sensor2, cross_echo_p):
                 return cross_echo_p
 
@@ -341,7 +354,7 @@ def cross_rectsolve(sensor1, sensor2, rectangle):
         mirror_s1 = mirror_point(sensor_p1, line_CD)
         mirror_s2 = mirror_point(sensor_p2, line_CD)
         if (mirror_s1 != (0, 0)) & (mirror_s2 != (0, 0)):
-            cross_echo_p = line_intersection((sensor_p1, mirror_s2), (sensor_p2,  mirror_s1))
+            cross_echo_p = line_intersection((sensor_p1, mirror_s2), (sensor_p2, mirror_s1))
             if range_check(sensor1, cross_echo_p) & range_check(sensor2, cross_echo_p):
                 return cross_echo_p
         return 0, 0
@@ -352,7 +365,7 @@ def cross_rectsolve(sensor1, sensor2, rectangle):
         mirror_s1 = mirror_point(sensor_p1, line_CD)
         mirror_s2 = mirror_point(sensor_p2, line_CD)
         if (mirror_s1 != (0, 0)) & (mirror_s2 != (0, 0)):
-            cross_echo_p = line_intersection((sensor_p1, mirror_s2), (sensor_p2,  mirror_s1))
+            cross_echo_p = line_intersection((sensor_p1, mirror_s2), (sensor_p2, mirror_s1))
             if range_check(sensor1, cross_echo_p) & range_check(sensor2, cross_echo_p):
                 return cross_echo_p
 
@@ -360,7 +373,7 @@ def cross_rectsolve(sensor1, sensor2, rectangle):
         mirror_s1 = mirror_point(sensor_p1, line_BC)
         mirror_s2 = mirror_point(sensor_p2, line_BC)
         if (mirror_s1 != (0, 0)) & (mirror_s2 != (0, 0)):
-            cross_echo_p = line_intersection((sensor_p1, mirror_s2), (sensor_p2,  mirror_s1))
+            cross_echo_p = line_intersection((sensor_p1, mirror_s2), (sensor_p2, mirror_s1))
             if range_check(sensor1, cross_echo_p) & range_check(sensor2, cross_echo_p):
                 return cross_echo_p
         return 0, 0
@@ -371,7 +384,7 @@ def cross_rectsolve(sensor1, sensor2, rectangle):
         mirror_s1 = mirror_point(sensor_p1, line_BC)
         mirror_s2 = mirror_point(sensor_p2, line_BC)
         if (mirror_s1 != (0, 0)) & (mirror_s2 != (0, 0)):
-            cross_echo_p = line_intersection((sensor_p1, mirror_s2), (sensor_p2,  mirror_s1))
+            cross_echo_p = line_intersection((sensor_p1, mirror_s2), (sensor_p2, mirror_s1))
             if range_check(sensor1, cross_echo_p) & range_check(sensor2, cross_echo_p):
                 return cross_echo_p
 
@@ -379,7 +392,7 @@ def cross_rectsolve(sensor1, sensor2, rectangle):
         mirror_s1 = mirror_point(sensor_p1, line_AB)
         mirror_s2 = mirror_point(sensor_p2, line_AB)
         if (mirror_s1 != (0, 0)) & (mirror_s2 != (0, 0)):
-            cross_echo_p = line_intersection((sensor_p1, mirror_s2), (sensor_p2,  mirror_s1))
+            cross_echo_p = line_intersection((sensor_p1, mirror_s2), (sensor_p2, mirror_s1))
             if range_check(sensor1, cross_echo_p) & range_check(sensor2, cross_echo_p):
                 return cross_echo_p
         return 0, 0
@@ -390,7 +403,7 @@ def cross_rectsolve(sensor1, sensor2, rectangle):
         mirror_s1 = mirror_point(sensor_p1, line_AB)
         mirror_s2 = mirror_point(sensor_p2, line_AB)
         if (mirror_s1 != (0, 0)) & (mirror_s2 != (0, 0)):
-            cross_echo_p = line_intersection((sensor_p1, mirror_s2), (sensor_p2,  mirror_s1))
+            cross_echo_p = line_intersection((sensor_p1, mirror_s2), (sensor_p2, mirror_s1))
             if range_check(sensor1, cross_echo_p) & range_check(sensor2, cross_echo_p):
                 return cross_echo_p
 
@@ -398,10 +411,11 @@ def cross_rectsolve(sensor1, sensor2, rectangle):
         mirror_s1 = mirror_point(sensor_p1, line_AD)
         mirror_s2 = mirror_point(sensor_p2, line_AD)
         if (mirror_s1 != (0, 0)) & (mirror_s2 != (0, 0)):
-            cross_echo_p = line_intersection((sensor_p1, mirror_s2), (sensor_p2,  mirror_s1))
+            cross_echo_p = line_intersection((sensor_p1, mirror_s2), (sensor_p2, mirror_s1))
             if range_check(sensor1, cross_echo_p) & range_check(sensor2, cross_echo_p):
                 return cross_echo_p
         return 0, 0
+
 
 def cross_circlesolve(sensor1, sensor2, rectangle):
     return 0, 0

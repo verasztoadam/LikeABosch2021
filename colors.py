@@ -1,0 +1,8 @@
+class Colors:
+    WHITE = (255, 255, 255)
+    BLACK = (0, 0, 0)
+    LIGHTGREY = (211, 211, 211)
+    PRIMARY = (75, 162, 198)
+    LIGHTSLATEGREY = (119, 136, 153)
+    CIRCLE_OBJECT = (229, 57, 53)
+    CIRCLE_OBJECT_BORDER = (171, 0, 13)

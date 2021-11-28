@@ -368,11 +368,11 @@ def mirror_point(point, line):
     x2, y2 = line[1][0], line[1][1]
     normal = normal_vect(x1, y1, x2, y2)
     """ Projection: """
-    ray = [(point[0], point[1]), (point[0], point[1]) + (normal * 10)]
+    ray = [(point[0], point[1]), (point[0] + normal[0] * 10, point[1] + normal[1] * 10)]
     inter_point = line_intersection(ray, line)
     if inter_point != (0, 0):
         d = distance_p(point, inter_point)
-        mirrored_point = point + normal * d
+        mirrored_point = (point[0] + normal[0] * d * 2, point[1] + normal[1] * d * 2)
         return mirrored_point
     else:
         return 0, 0
@@ -383,7 +383,7 @@ def cross_rectsolve(sensor1, sensor2, rectangle):
     sensor_p1 = (sensor1.x, sensor1.y)
     sensor_p2 = (sensor2.x, sensor2.y)
 
-    if 0 < rectangle.angle < math.pi / 2:
+    if 0 <= rectangle.angle < math.pi / 2:
         """ AD and CD"""
         line_AD = [rectangle.corner_A, rectangle.corner_D]
         mirror_s1 = mirror_point(sensor_p1, line_AD)
@@ -391,7 +391,13 @@ def cross_rectsolve(sensor1, sensor2, rectangle):
         if (mirror_s1 != (0, 0)) & (mirror_s2 != (0, 0)):
             cross_echo_p = line_intersection((sensor_p1, mirror_s2), (sensor_p2, mirror_s1))
             if range_check(sensor1, cross_echo_p) & range_check(sensor2, cross_echo_p):
-                return cross_echo_p
+                cross_echo_p = (round(cross_echo_p[0], 10), round(cross_echo_p[1], 10))
+                line_AD = [(round(line_AD[0][0], 10), round(line_AD[0][1], 10)),
+                           (round(line_AD[1][0], 10), round(line_AD[1][1], 10))]
+                if ((line_AD[0][0] >= cross_echo_p[0] >= line_AD[1][0]) or (line_AD[0][0] <= cross_echo_p[0] <= line_AD[1][0])) \
+                        and ((line_AD[0][1] >= cross_echo_p[1] >= line_AD[1][1]) or (
+                        line_AD[0][1] <= cross_echo_p[1] <= line_AD[1][1])):
+                    return cross_echo_p
 
         line_CD = [rectangle.corner_C, rectangle.corner_D]
         mirror_s1 = mirror_point(sensor_p1, line_CD)
@@ -399,7 +405,14 @@ def cross_rectsolve(sensor1, sensor2, rectangle):
         if (mirror_s1 != (0, 0)) & (mirror_s2 != (0, 0)):
             cross_echo_p = line_intersection((sensor_p1, mirror_s2), (sensor_p2, mirror_s1))
             if range_check(sensor1, cross_echo_p) & range_check(sensor2, cross_echo_p):
-                return cross_echo_p
+                cross_echo_p = (round(cross_echo_p[0], 10), round(cross_echo_p[1], 10))
+                line_CD = [(round(line_CD[0][0], 10), round(line_CD[0][1], 10)),
+                           (round(line_CD[1][0], 10), round(line_CD[1][1], 10))]
+                if ((line_CD[0][0] >= cross_echo_p[0] >= line_CD[1][0]) or (
+                        line_CD[0][0] <= cross_echo_p[0] <= line_CD[1][0])) \
+                        and ((line_CD[0][1] >= cross_echo_p[1] >= line_CD[1][1]) or (
+                        line_CD[0][1] <= cross_echo_p[1] <= line_CD[1][1])):
+                    return cross_echo_p
         return 0, 0
 
     elif math.pi / 2 <= rectangle.angle < math.pi:
@@ -410,7 +423,14 @@ def cross_rectsolve(sensor1, sensor2, rectangle):
         if (mirror_s1 != (0, 0)) & (mirror_s2 != (0, 0)):
             cross_echo_p = line_intersection((sensor_p1, mirror_s2), (sensor_p2, mirror_s1))
             if range_check(sensor1, cross_echo_p) & range_check(sensor2, cross_echo_p):
-                return cross_echo_p
+                cross_echo_p = (round(cross_echo_p[0], 10), round(cross_echo_p[1], 10))
+                line_CD = [(round(line_CD[0][0], 10), round(line_CD[0][1], 10)),
+                           (round(line_CD[1][0], 10), round(line_CD[1][1], 10))]
+                if ((line_CD[0][0] >= cross_echo_p[0] >= line_CD[1][0]) or (
+                        line_CD[0][0] <= cross_echo_p[0] <= line_CD[1][0])) \
+                        and ((line_CD[0][1] >= cross_echo_p[1] >= line_CD[1][1]) or (
+                        line_CD[0][1] <= cross_echo_p[1] <= line_CD[1][1])):
+                    return cross_echo_p
 
         line_BC = [rectangle.corner_B, rectangle.corner_C]
         mirror_s1 = mirror_point(sensor_p1, line_BC)
@@ -418,7 +438,14 @@ def cross_rectsolve(sensor1, sensor2, rectangle):
         if (mirror_s1 != (0, 0)) & (mirror_s2 != (0, 0)):
             cross_echo_p = line_intersection((sensor_p1, mirror_s2), (sensor_p2, mirror_s1))
             if range_check(sensor1, cross_echo_p) & range_check(sensor2, cross_echo_p):
-                return cross_echo_p
+                cross_echo_p = (round(cross_echo_p[0], 10), round(cross_echo_p[1], 10))
+                line_BC = [(round(line_BC[0][0], 10), round(line_BC[0][1], 10)),
+                           (round(line_BC[1][0], 10), round(line_BC[1][1], 10))]
+                if ((line_BC[0][0] >= cross_echo_p[0] >= line_BC[1][0]) or (
+                        line_BC[0][0] <= cross_echo_p[0] <= line_BC[1][0])) \
+                        and ((line_BC[0][1] >= cross_echo_p[1] >= line_BC[1][1]) or (
+                        line_BC[0][1] <= cross_echo_p[1] <= line_BC[1][1])):
+                    return cross_echo_p
         return 0, 0
 
     elif math.pi <= rectangle.angle < math.pi * 3 / 2:
@@ -429,7 +456,14 @@ def cross_rectsolve(sensor1, sensor2, rectangle):
         if (mirror_s1 != (0, 0)) & (mirror_s2 != (0, 0)):
             cross_echo_p = line_intersection((sensor_p1, mirror_s2), (sensor_p2, mirror_s1))
             if range_check(sensor1, cross_echo_p) & range_check(sensor2, cross_echo_p):
-                return cross_echo_p
+                cross_echo_p = (round(cross_echo_p[0], 10), round(cross_echo_p[1], 10))
+                line_BC = [(round(line_BC[0][0], 10), round(line_BC[0][1], 10)),
+                           (round(line_BC[1][0], 10), round(line_BC[1][1], 10))]
+                if ((line_BC[0][0] >= cross_echo_p[0] >= line_BC[1][0]) or (
+                        line_BC[0][0] <= cross_echo_p[0] <= line_BC[1][0])) \
+                        and ((line_BC[0][1] >= cross_echo_p[1] >= line_BC[1][1]) or (
+                        line_BC[0][1] <= cross_echo_p[1] <= line_BC[1][1])):
+                    return cross_echo_p
 
         line_AB = [rectangle.corner_A, rectangle.corner_B]
         mirror_s1 = mirror_point(sensor_p1, line_AB)
@@ -437,7 +471,14 @@ def cross_rectsolve(sensor1, sensor2, rectangle):
         if (mirror_s1 != (0, 0)) & (mirror_s2 != (0, 0)):
             cross_echo_p = line_intersection((sensor_p1, mirror_s2), (sensor_p2, mirror_s1))
             if range_check(sensor1, cross_echo_p) & range_check(sensor2, cross_echo_p):
-                return cross_echo_p
+                cross_echo_p = (round(cross_echo_p[0], 10), round(cross_echo_p[1], 10))
+                line_AB = [(round(line_AB[0][0], 10), round(line_AB[0][1], 10)),
+                           (round(line_AB[1][0], 10), round(line_AB[1][1], 10))]
+                if ((line_AB[0][0] >= cross_echo_p[0] >= line_AB[1][0]) or (
+                        line_AB[0][0] <= cross_echo_p[0] <= line_AB[1][0])) \
+                        and ((line_AB[0][1] >= cross_echo_p[1] >= line_AB[1][1]) or (
+                        line_AB[0][1] <= cross_echo_p[1] <= line_AB[1][1])):
+                    return cross_echo_p
         return 0, 0
 
     else:
@@ -448,7 +489,14 @@ def cross_rectsolve(sensor1, sensor2, rectangle):
         if (mirror_s1 != (0, 0)) & (mirror_s2 != (0, 0)):
             cross_echo_p = line_intersection((sensor_p1, mirror_s2), (sensor_p2, mirror_s1))
             if range_check(sensor1, cross_echo_p) & range_check(sensor2, cross_echo_p):
-                return cross_echo_p
+                cross_echo_p = (round(cross_echo_p[0], 10), round(cross_echo_p[1], 10))
+                line_AB = [(round(line_AB[0][0], 10), round(line_AB[0][1], 10)),
+                           (round(line_AB[1][0], 10), round(line_AB[1][1], 10))]
+                if ((line_AB[0][0] >= cross_echo_p[0] >= line_AB[1][0]) or (
+                        line_AB[0][0] <= cross_echo_p[0] <= line_AB[1][0])) \
+                        and ((line_AB[0][1] >= cross_echo_p[1] >= line_AB[1][1]) or (
+                        line_AB[0][1] <= cross_echo_p[1] <= line_AB[1][1])):
+                    return cross_echo_p
 
         line_AD = [rectangle.corner_A, rectangle.corner_D]
         mirror_s1 = mirror_point(sensor_p1, line_AD)
@@ -456,7 +504,14 @@ def cross_rectsolve(sensor1, sensor2, rectangle):
         if (mirror_s1 != (0, 0)) & (mirror_s2 != (0, 0)):
             cross_echo_p = line_intersection((sensor_p1, mirror_s2), (sensor_p2, mirror_s1))
             if range_check(sensor1, cross_echo_p) & range_check(sensor2, cross_echo_p):
-                return cross_echo_p
+                cross_echo_p = (round(cross_echo_p[0], 10), round(cross_echo_p[1], 10))
+                line_AD = [(round(line_AD[0][0], 10), round(line_AD[0][1], 10)),
+                           (round(line_AD[1][0], 10), round(line_AD[1][1], 10))]
+                if ((line_AD[0][0] >= cross_echo_p[0] >= line_AD[1][0]) or (
+                        line_AD[0][0] <= cross_echo_p[0] <= line_AD[1][0])) \
+                        and ((line_AD[0][1] >= cross_echo_p[1] >= line_AD[1][1]) or (
+                        line_AD[0][1] <= cross_echo_p[1] <= line_AD[1][1])):
+                    return cross_echo_p
         return 0, 0
 
 

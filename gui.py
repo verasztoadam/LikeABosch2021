@@ -209,11 +209,26 @@ class GUI:
 
         """Get echo list"""
         for direct in self.model.direct_list:
-            pygame.draw.line(self.screen, Colors.BLACK,
+            pygame.draw.line(self.screen, Colors.GREEN,
                              (direct[0][0] / GUIConstants.PX_TO_M,
                               self.height * 0.5 - (direct[0][1] / GUIConstants.PX_TO_M)),
                              (direct[1][0] / GUIConstants.PX_TO_M,
                               self.height * 0.5 - (direct[1][1] / GUIConstants.PX_TO_M)),
+                             3)
+
+        """Get cross echo list"""
+        for cross in self.model.cross_list:
+            pygame.draw.line(self.screen, Colors.BLACK,
+                             (cross[0][0] / GUIConstants.PX_TO_M,
+                              self.height * 0.5 - (cross[0][1] / GUIConstants.PX_TO_M)),
+                             (cross[1][0] / GUIConstants.PX_TO_M,
+                              self.height * 0.5 - (cross[1][1] / GUIConstants.PX_TO_M)),
+                             3)
+            pygame.draw.line(self.screen, Colors.BLACK,
+                             (cross[2][0] / GUIConstants.PX_TO_M,
+                              self.height * 0.5 - (cross[2][1] / GUIConstants.PX_TO_M)),
+                             (cross[1][0] / GUIConstants.PX_TO_M,
+                              self.height * 0.5 - (cross[1][1] / GUIConstants.PX_TO_M)),
                              3)
 
         font = pygame.font.SysFont(None, 20)
@@ -221,8 +236,6 @@ class GUI:
                    (self.height * 0.5 - mouse_pos[1]) * GUIConstants.PX_TO_M)
         img = font.render(str(rel_pos[0]) + "," + str(rel_pos[1]), True, Colors.BLACK)
         self.screen.blit(img, (0, 0))
-
-
 
         self.clock.tick(30)
         pygame.display.update()

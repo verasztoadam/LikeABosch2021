@@ -385,7 +385,7 @@ def cross_rectsolve(sensor1, sensor2, rectangle):
 
     if 0 <= rectangle.angle < math.pi / 2:
         """ AD and CD"""
-        line_AD = [rectangle.corner_A, rectangle.corner_D]
+        line_AD = [rectangle.corner_D, rectangle.corner_A]
         mirror_s1 = mirror_point(sensor_p1, line_AD)
         mirror_s2 = mirror_point(sensor_p2, line_AD)
         if (mirror_s1 != (0, 0)) & (mirror_s2 != (0, 0)):
@@ -394,7 +394,8 @@ def cross_rectsolve(sensor1, sensor2, rectangle):
                 cross_echo_p = (round(cross_echo_p[0], 10), round(cross_echo_p[1], 10))
                 line_AD = [(round(line_AD[0][0], 10), round(line_AD[0][1], 10)),
                            (round(line_AD[1][0], 10), round(line_AD[1][1], 10))]
-                if ((line_AD[0][0] >= cross_echo_p[0] >= line_AD[1][0]) or (line_AD[0][0] <= cross_echo_p[0] <= line_AD[1][0])) \
+                if ((line_AD[0][0] >= cross_echo_p[0] >= line_AD[1][0]) or (
+                        line_AD[0][0] <= cross_echo_p[0] <= line_AD[1][0])) \
                         and ((line_AD[0][1] >= cross_echo_p[1] >= line_AD[1][1]) or (
                         line_AD[0][1] <= cross_echo_p[1] <= line_AD[1][1])):
                     return cross_echo_p
@@ -498,7 +499,7 @@ def cross_rectsolve(sensor1, sensor2, rectangle):
                         line_AB[0][1] <= cross_echo_p[1] <= line_AB[1][1])):
                     return cross_echo_p
 
-        line_AD = [rectangle.corner_A, rectangle.corner_D]
+        line_AD = [rectangle.corner_D, rectangle.corner_A]
         mirror_s1 = mirror_point(sensor_p1, line_AD)
         mirror_s2 = mirror_point(sensor_p2, line_AD)
         if (mirror_s1 != (0, 0)) & (mirror_s2 != (0, 0)):
@@ -515,5 +516,45 @@ def cross_rectsolve(sensor1, sensor2, rectangle):
         return 0, 0
 
 
-def cross_circlesolve(sensor1, sensor2, rectangle):
+def cross_circlesolve(sensor1: Sensor, sensor2: Sensor, circle: Circle):
+    """Searching fot the cross echo point in the section between the lines connecting the sensors with the center of
+     the circle"""
+    v1 = (circle.center[0] - sensor1.x, circle.center[1] - sensor1.y)
+    v2 = (circle.center[0] - sensor2.x, circle.center[1] - sensor2.y)
+    d1 = distance(circle.center[0], circle.center[1], sensor1.x, sensor1.y)
+    d2 = distance(circle.center[0], circle.center[1], sensor2.x, sensor2.y)
+    fi1 = math.atan2(v1[1], v1[0])
+    fi2 = math.atan2(v2[1], v2[0])
+
+    if fi1 < 0:
+        fi1 += math.pi * 2
+    if fi2 < 0:
+        fi2 += math.pi * 2
+
+    min_angle = fi2
+    max_angle = fi1
+    if fi1 < fi2:
+        min_angle = fi1
+        max_angle = fi2
+
+    step_size = math.pi / 18000
+    current_angle = min_angle
+    min_point = (circle.center[0] - circle.radius * math.cos(current_angle),
+                 circle.center[1] - circle.radius * math.sin(current_angle))
+    min_dist = distance(min_point[0], min_point[1], sensor1.x, sensor1.y) + \
+               distance(min_point[0], min_point[1], sensor2.x, sensor2.y)
+
+    while current_angle <= max_angle:
+        current_angle += step_size
+        current_point = (circle.center[0] - circle.radius * math.cos(current_angle),
+                         circle.center[1] - circle.radius * math.sin(current_angle))
+        current_dist = distance(current_point[0], current_point[1], sensor1.x, sensor1.y) + \
+                       distance(current_point[0], current_point[1], sensor2.x, sensor2.y)
+
+        if current_dist < min_dist:
+            min_dist = current_dist
+            min_point = current_point
+
+        if range_check(sensor1, min_point) & range_check(sensor2, min_point):
+            return min_point
     return 0, 0

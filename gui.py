@@ -18,6 +18,7 @@ class GUI:
         pygame.init()
         pygame.font.init()
         self.screen = pygame.display.set_mode((1280, 720))
+        # self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
         self.width = self.screen.get_width()
         self.height = self.screen.get_height()
         pygame.display.set_caption(GUIConstants.WINDOW_TITLE)

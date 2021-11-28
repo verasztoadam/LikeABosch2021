@@ -4,7 +4,7 @@ import math
 
 
 class Rectangle:
-    """ Upper right corner: pos_tuple (x,y) """
+    """ Upper left corner: pos_tuple (x,y) """
 
     def __init__(self, pos_tuple, width, length, angle):
         self.width = width
@@ -42,6 +42,7 @@ class Sensor:
     def update_loc(self, car_pos):
         self.x = car_pos[0] + SensorLocations.list[self.index][0]
         self.y = car_pos[1] + SensorLocations.list[self.index][1]
+        self.pos = (self.x, self.y)
 
     def min_direct(self):
         """ Calculating travel distances for direct echoes"""
@@ -80,7 +81,7 @@ class Model:
         """ Inputs """
         self.rect_list = []
         self.circle_list = []
-        self.car_pos = [0, 0]
+        self.car_pos = (0, 0)
         """ Outputs """
         self.direct_list = []  # [(x1, y1),(x2, y2)] [(), ()] ...
         self.cross_list = []  # [(x1, y1),(x2, y2), (x3, y3)] [(), (), ()] ...
@@ -100,15 +101,6 @@ class Model:
         """ Updating sensor coordinates """
         for i, sensor in enumerate(self.sensor_list):
             sensor.update_loc(self.car_pos)
-
-        """ Creating internal representations of GUI entities """
-        #self.rect_list = []
-        #for i, gui_rect in enumerate(gui.rect_list):
-        #    self.rect_list[i] = Rectangle(gui_rect.pos, gui_rect.width, gui_rect.length, gui_rect.angle)
-
-        # self.circle_list = []
-        # for i, gui_circle in enumerate(gui.circle_list):
-        #    self.circle_list[i] = Circle(gui_circle.center, gui_circle.radius)
 
     def calc_rays(self):
         """ Direct echoes: """
@@ -132,6 +124,8 @@ class Model:
         """ Cross-echoes: """
         self.cross_list = []
         for i, sensor in enumerate(self.sensor_list):
+            if i == 5:
+                break
             """For rectangles"""
             for j, rect in enumerate(self.rect_list):
                 cross_point = cross_rectsolve(sensor, self.sensor_list[i + 1], rect)
@@ -193,8 +187,8 @@ def range_check(sensor, point):
         min_angle = -math.pi / 4 - math.pi / 3
         max_angle = -math.pi / 4 + math.pi / 3
     else:
-        min_angle = math.pi / 3
-        max_angle = -math.pi / 3
+        min_angle = -math.pi / 3
+        max_angle = math.pi / 3
     dx = x2 - x1
     dy = y2 - y1
     if min_angle < math.atan2(dy, dx) < max_angle:
@@ -228,6 +222,7 @@ def rect_solve(sensor, rectangle):
     Its sides are AB, BC, CD, DA respectively
     Based on the inclination angle, two sides can be sensor facing at one point in time
     """
+    # TODO : Another method
     normal_AB = normal_vect(rectangle.corner_A[0], rectangle.corner_A[1],
                             rectangle.corner_B[0], rectangle.corner_B[1])
     normal_BC = normal_vect(rectangle.corner_B[0], rectangle.corner_B[1],
@@ -237,71 +232,119 @@ def rect_solve(sensor, rectangle):
     normal_DA = normal_vect(rectangle.corner_D[0], rectangle.corner_D[1],
                             rectangle.corner_A[0], rectangle.corner_A[1])
 
-    if 0 < rectangle.angle < math.pi / 2:
+    if 0 <= rectangle.angle < math.pi / 2:
         """ AD and CD"""
         line_AD = [rectangle.corner_A, rectangle.corner_D]
-        ray2AD = [(sensor.x, sensor.y), (sensor.x, sensor.y) + (normal_DA * 3)]
+        ray2AD = [(sensor.x, sensor.y), (sensor.x + normal_DA[0] * 3, sensor.y + normal_DA[1] * 3)]
         point = line_intersection(line_AD, ray2AD)
         if point != (0, 0):
             if range_check(sensor, point):
-                return point
+                point = (round(point[0], 10), round(point[1], 10))
+                line_AD = [(round(line_AD[0][0], 10), round(line_AD[0][1], 10)),
+                           (round(line_AD[1][0], 10), round(line_AD[1][1], 10))]
+                if ((line_AD[0][0] >= point[0] >= line_AD[1][0]) or (line_AD[0][0] <= point[0] <= line_AD[1][0])) \
+                        and ((line_AD[0][1] >= point[1] >= line_AD[1][1]) or (
+                        line_AD[0][1] <= point[1] <= line_AD[1][1])):
+                    return point
 
         line_CD = [rectangle.corner_C, rectangle.corner_D]
-        ray2CD = [(sensor.x, sensor.y), (sensor.x, sensor.y) + (normal_CD * 3)]
+        ray2CD = [(sensor.x, sensor.y), (sensor.x + normal_CD[0] * 3, sensor.y + normal_CD[1] * 3)]
         point = line_intersection(line_CD, ray2CD)
         if point != (0, 0):
+            point = (round(point[0], 10), round(point[1], 10))
+            line_CD = [(round(line_CD[0][0], 10), round(line_CD[0][1], 10)),
+                       (round(line_CD[1][0], 10), round(line_CD[1][1], 10))]
             if range_check(sensor, point):
-                return point
+                if ((line_CD[0][0] >= point[0] >= line_CD[1][0]) or (line_CD[0][0] <= point[0] <= line_CD[1][0])) \
+                        and ((line_CD[0][1] >= point[1] >= line_CD[1][1]) or (
+                        line_CD[0][1] <= point[1] <= line_CD[1][1])):
+                    return point
         return 0, 0
 
     elif math.pi / 2 <= rectangle.angle < math.pi:
         """ CD and BC """
         line_CD = [rectangle.corner_C, rectangle.corner_D]
-        ray2CD = [(sensor.x, sensor.y), (sensor.x, sensor.y) + (normal_CD * 3)]
+        ray2CD = [(sensor.x, sensor.y), (sensor.x + normal_CD[0] * 3, sensor.y + normal_CD[1] * 3)]
         point = line_intersection(line_CD, ray2CD)
         if point != (0, 0):
+            point = (round(point[0], 10), round(point[1], 10))
+            line_CD = [(round(line_CD[0][0], 10), round(line_CD[0][1], 10)),
+                       (round(line_CD[1][0], 10), round(line_CD[1][1], 10))]
             if range_check(sensor, point):
-                return point
+                if ((line_CD[0][0] >= point[0] >= line_CD[1][0]) or (line_CD[0][0] <= point[0] <= line_CD[1][0])) \
+                        and ((line_CD[0][1] >= point[1] >= line_CD[1][1]) or (
+                        line_CD[0][1] <= point[1] <= line_CD[1][1])):
+                    return point
 
         line_BC = [rectangle.corner_B, rectangle.corner_C]
-        ray2BC = [(sensor.x, sensor.y), (sensor.x, sensor.y) + (normal_BC * 3)]
+        ray2BC = [(sensor.x, sensor.y), (sensor.x + normal_BC[0] * 3, sensor.y + normal_BC[1] * 3)]
         point = line_intersection(line_BC, ray2BC)
         if point != (0, 0):
+            point = (round(point[0], 10), round(point[1], 10))
+            line_BC = [(round(line_BC[0][0], 10), round(line_BC[0][1], 10)),
+                       (round(line_BC[1][0], 10), round(line_BC[1][1], 10))]
             if range_check(sensor, point):
-                return point
+                if ((line_BC[0][0] >= point[0] >= line_BC[1][0]) or (line_BC[0][0] <= point[0] <= line_BC[1][0])) \
+                        and ((line_BC[0][1] >= point[1] >= line_BC[1][1]) or (
+                        line_BC[0][1] <= point[1] <= line_BC[1][1])):
+                    return point
         return 0, 0
 
     elif math.pi <= rectangle.angle < math.pi * 3 / 2:
         """ BC and AB """
         line_BC = [rectangle.corner_B, rectangle.corner_C]
-        ray2BC = [(sensor.x, sensor.y), (sensor.x, sensor.y) + (normal_BC * 3)]
+        ray2BC = [(sensor.x, sensor.y), (sensor.x + normal_BC[0] * 3, sensor.y + normal_BC[1] * 3)]
         point = line_intersection(line_BC, ray2BC)
         if point != (0, 0):
+            point = (round(point[0], 10), round(point[1], 10))
+            line_BC = [(round(line_BC[0][0], 10), round(line_BC[0][1], 10)),
+                       (round(line_BC[1][0], 10), round(line_BC[1][1], 10))]
             if range_check(sensor, point):
-                return point
+                if ((line_BC[0][0] >= point[0] >= line_BC[1][0]) or (line_BC[0][0] <= point[0] <= line_BC[1][0])) \
+                        and ((line_BC[0][1] >= point[1] >= line_BC[1][1]) or (
+                        line_BC[0][1] <= point[1] <= line_BC[1][1])):
+                    return point
 
         line_AB = [rectangle.corner_A, rectangle.corner_B]
-        ray2AB = [(sensor.x, sensor.y), (sensor.x, sensor.y) + (normal_AB * 3)]
+        ray2AB = [(sensor.x, sensor.y), (sensor.x + normal_AB[0] * 3, sensor.y + normal_AB[1] * 3)]
         point = line_intersection(line_AB, ray2AB)
         if point != (0, 0):
+            point = (round(point[0], 10), round(point[1], 10))
+            line_AB = [(round(line_AB[0][0], 10), round(line_AB[0][1], 10)),
+                       (round(line_AB[1][0], 10), round(line_AB[1][1], 10))]
             if range_check(sensor, point):
-                return point
+                if ((line_AB[0][0] >= point[0] >= line_AB[1][0]) or (line_AB[0][0] <= point[0] <= line_AB[1][0])) \
+                        and ((line_AB[0][1] >= point[1] >= line_AB[1][1]) or (
+                        line_AB[0][1] <= point[1] <= line_AB[1][1])):
+                    return point
         return 0, 0
     else:
         """ AB and DA """
         line_AB = [rectangle.corner_A, rectangle.corner_B]
-        ray2AB = [(sensor.x, sensor.y), (sensor.x, sensor.y) + (normal_AB * 3)]
+        ray2AB = [(sensor.x, sensor.y), (sensor.x + normal_AB[0] * 3, sensor.y + normal_AB[1] * 3)]
         point = line_intersection(line_AB, ray2AB)
         if point != (0, 0):
+            point = (round(point[0], 10), round(point[1], 10))
+            line_AB = [(round(line_AB[0][0], 10), round(line_AB[0][1], 10)),
+                       (round(line_AB[1][0], 10), round(line_AB[1][1], 10))]
             if range_check(sensor, point):
-                return point
+                if ((line_AB[0][0] >= point[0] >= line_AB[1][0]) or (line_AB[0][0] <= point[0] <= line_AB[1][0])) \
+                        and ((line_AB[0][1] >= point[1] >= line_AB[1][1]) or (
+                        line_AB[0][1] <= point[1] <= line_AB[1][1])):
+                    return point
 
         line_AD = [rectangle.corner_A, rectangle.corner_D]
-        ray2AD = [(sensor.x, sensor.y), (sensor.x, sensor.y) + (normal_DA * 3)]
+        ray2AD = [(sensor.x, sensor.y), (sensor.x + normal_DA[0] * 3, sensor.y + normal_DA[1] * 3)]
         point = line_intersection(line_AD, ray2AD)
         if point != (0, 0):
+            point = (round(point[0], 10), round(point[1], 10))
+            line_AD = [(round(line_AD[0][0], 10), round(line_AD[0][1], 10)),
+                       (round(line_AD[1][0], 10), round(line_AD[1][1], 10))]
             if range_check(sensor, point):
-                return point
+                if ((line_AD[0][0] >= point[0] >= line_AD[1][0]) or (line_AD[0][0] <= point[0] <= line_AD[1][0])) \
+                        and ((line_AD[0][1] >= point[1] >= line_AD[1][1]) or (
+                        line_AD[0][1] <= point[1] <= line_AD[1][1])):
+                    return point
         return 0, 0
 
 
@@ -312,7 +355,7 @@ def circle_solve(sensor, circle):
     dx = x2 - x1
     dy = y2 - y1
     d = distance(x1, y1, x2, y2)
-    point = (x1 + dx * circle.radius / d, y1 + dy * circle.radius / d)
+    point = (x1 + dx * (1 - circle.radius / d), y1 + dy * (1 - circle.radius / d))
     if range_check(sensor, point):
         return point
     else:

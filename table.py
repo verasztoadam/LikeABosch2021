@@ -40,3 +40,10 @@ class Table:
         img = font.render(msg, True, Colors.BLACK)
         self.screen.blit(img, ((x + 0.5) * GUIConstants.TABLE_CELL_WIDTH - img.get_width() * 0.5 + self.gui_pos[0],
                                (y + 0.5) * GUIConstants.TABLE_CELL_HEIGHT - img.get_height() * 0.5 + self.gui_pos[1]))
+
+    def draw_value(self, x, y, value):
+        """Draws a value into the cell"""
+        text = "X"
+        if value != 0:
+            text = str(round(value, 3))
+        self.draw_text(x, y, text)

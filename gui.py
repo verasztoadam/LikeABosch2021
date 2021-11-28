@@ -208,6 +208,21 @@ class GUI:
                         sprite.set_dragged(sprite.gui_pos)
             sprite.draw()
 
+        """Get cross echo list"""
+        for cross in self.model.cross_list:
+            pygame.draw.line(self.screen, Colors.PURPLE,
+                             (cross[0][0] / GUIConstants.PX_TO_M,
+                              self.height * 0.5 - (cross[0][1] / GUIConstants.PX_TO_M)),
+                             (cross[1][0] / GUIConstants.PX_TO_M,
+                              self.height * 0.5 - (cross[1][1] / GUIConstants.PX_TO_M)),
+                             3)
+            pygame.draw.line(self.screen, Colors.PURPLE,
+                             (cross[2][0] / GUIConstants.PX_TO_M,
+                              self.height * 0.5 - (cross[2][1] / GUIConstants.PX_TO_M)),
+                             (cross[1][0] / GUIConstants.PX_TO_M,
+                              self.height * 0.5 - (cross[1][1] / GUIConstants.PX_TO_M)),
+                             3)
+
         """Get echo list"""
         for direct in self.model.direct_list:
             pygame.draw.line(self.screen, Colors.GREEN,
@@ -217,26 +232,11 @@ class GUI:
                               self.height * 0.5 - (direct[1][1] / GUIConstants.PX_TO_M)),
                              3)
 
-        """Get cross echo list"""
-        for cross in self.model.cross_list:
-            pygame.draw.line(self.screen, Colors.BLACK,
-                             (cross[0][0] / GUIConstants.PX_TO_M,
-                              self.height * 0.5 - (cross[0][1] / GUIConstants.PX_TO_M)),
-                             (cross[1][0] / GUIConstants.PX_TO_M,
-                              self.height * 0.5 - (cross[1][1] / GUIConstants.PX_TO_M)),
-                             3)
-            pygame.draw.line(self.screen, Colors.BLACK,
-                             (cross[2][0] / GUIConstants.PX_TO_M,
-                              self.height * 0.5 - (cross[2][1] / GUIConstants.PX_TO_M)),
-                             (cross[1][0] / GUIConstants.PX_TO_M,
-                              self.height * 0.5 - (cross[1][1] / GUIConstants.PX_TO_M)),
-                             3)
-
-        font = pygame.font.SysFont(None, 20)
-        rel_pos = (mouse_pos[0] * GUIConstants.PX_TO_M,
-                   (self.height * 0.5 - mouse_pos[1]) * GUIConstants.PX_TO_M)
-        img = font.render(str(rel_pos[0]) + "," + str(rel_pos[1]), True, Colors.BLACK)
-        self.screen.blit(img, (0, 0))
+        """Get sensor values"""
+        for i, sensor in enumerate(self.model.sensor_list):
+            self.data_table.draw_value(1, i + 1, sensor.direct_val)
+            self.data_table.draw_value(2, i + 1, sensor.cross_val_l)
+            self.data_table.draw_value(3, i + 1, sensor.cross_val_r)
 
         self.clock.tick(30)
         pygame.display.update()

@@ -7,6 +7,7 @@ from gui_constants import GUIConstants
 from colors import Colors
 from button import Button
 from table import Table
+from control import Control
 from size_picker import SizePicker
 import simulation
 import conversion
@@ -76,6 +77,9 @@ class GUI:
         """Init simulation"""
         self.model = simulation.Model()
 
+        """Init control"""
+        self.control = Control()
+
     def update(self):
         """Updates the content of the window"""
         self.screen.fill(Colors.WHITE)
@@ -88,7 +92,7 @@ class GUI:
         if self.is_running:
             time_delay = self.clock.get_time()
             start_pos = self.car.gui_pos
-            self.car.set_gui_pos((start_pos[0] + time_delay / 10000 * self.width, 0))
+            self.car.set_gui_pos((start_pos[0] + time_delay / 10000 * self.width * self.control.get_speed(), 0))
             if self.is_colliding_any(self.car):
                 self.car.set_gui_pos(start_pos)
 
@@ -233,7 +237,12 @@ class GUI:
                              3)
 
         """Get sensor values"""
+        self.control.input.clear()
         for i, sensor in enumerate(self.model.sensor_list):
+            self.control.input.append(sensor.direct_val)
+            self.control.input.append(sensor.cross_val_r)
+            self.control.input.append(sensor.cross_val_l)
+            self.car.sensors[sensor.index].set_color([sensor.direct_val, sensor.cross_val_l, sensor.cross_val_r])
             self.data_table.draw_value(1, i + 1, sensor.direct_val)
             self.data_table.draw_value(2, i + 1, sensor.cross_val_l)
             self.data_table.draw_value(3, i + 1, sensor.cross_val_r)

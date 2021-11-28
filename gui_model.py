@@ -137,7 +137,6 @@ class CarObject(DragAndDrop):
         self.gui_pos = gui_pos
         self.rect = pygame.Rect(gui_pos[0] - width, gui_pos[1], width, height)
 
-        # TODO: Decide which mask to use
         # self.mask = pygame.mask.from_surface(self.image)
         surface = pygame.Surface((width, height), pygame.SRCALPHA)
         pygame.draw.rect(surface, Colors.BLACK, pygame.Rect(0, 0, width, height))
@@ -261,7 +260,25 @@ class CarObject(DragAndDrop):
             pygame.draw.polygon(self.screen,
                                 Colors.BLACK,
                                 self.points,
-                                3)
+                                1)
+
+        def set_color(self, values):
+            not_zero = []
+            for val in values:
+                if val != 0:
+                    not_zero.append(val)
+
+            if not not_zero:
+                self.color = Colors.GREEN
+            else:
+                value = min(not_zero)
+                if value <= GUIConstants.DANGER:
+                    self.color = Colors.RED
+                elif value <= GUIConstants.WARNING:
+                    self.color = "orange"
+                elif value <= GUIConstants.OBJECT_DETECTED:
+                    self.color = "yellow"
+            self.draw()
 
 
 def calculate_rotation(rel_points, rot, rot_point):

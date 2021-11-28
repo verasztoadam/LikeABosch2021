@@ -20,3 +20,8 @@ class GUIConstants:
     """PX_TO_M"""
     PX_TO_M = 1
 
+    """Sensor color indicatior values"""
+    DANGER = 1
+    WARNING = 2
+    OBJECT_DETECTED = 3
+

@@ -60,16 +60,16 @@ class Sensor:
     def cross_vals(self):
         """ Calculating travel distances for cross-echoes """
         if self.cross_echo_l:
-            self.cross_val_l = distance(self.x, self.y, self.cross_echo_l[0], self.cross_echo_l[1]) \
+            self.cross_val_l = (distance(self.x, self.y, self.cross_echo_l[0], self.cross_echo_l[1]) \
                                + distance(self.cross_echo_l[0], self.cross_echo_l[1],
-                                          self.cross_echo_l[2], self.cross_echo_l[3])
+                                          self.cross_echo_l[2], self.cross_echo_l[3])) / 2
         else:
             self.cross_val_l = 0
 
         if self.cross_echo_r:
-            self.cross_val_r = distance(self.x, self.y, self.cross_echo_r[0], self.cross_echo_r[1]) \
+            self.cross_val_r = (distance(self.x, self.y, self.cross_echo_r[0], self.cross_echo_r[1]) \
                                + distance(self.cross_echo_r[0], self.cross_echo_r[1],
-                                          self.cross_echo_r[2], self.cross_echo_r[3])
+                                          self.cross_echo_r[2], self.cross_echo_r[3]))/2
         else:
             self.cross_val_r = 0
 
@@ -105,6 +105,10 @@ class Model:
     def calc_rays(self):
         """ Direct echoes: """
         self.direct_list = []
+        for sensor in self.sensor_list:
+            sensor.cross_echo_l.clear()
+            sensor.cross_echo_r.clear()
+            sensor.direct_echoes.clear()
 
         for i, sensor in enumerate(self.sensor_list):
             for j, rect in enumerate(self.rect_list):
@@ -222,7 +226,6 @@ def rect_solve(sensor, rectangle):
     Its sides are AB, BC, CD, DA respectively
     Based on the inclination angle, two sides can be sensor facing at one point in time
     """
-    # TODO : Another method
     normal_AB = normal_vect(rectangle.corner_A[0], rectangle.corner_A[1],
                             rectangle.corner_B[0], rectangle.corner_B[1])
     normal_BC = normal_vect(rectangle.corner_B[0], rectangle.corner_B[1],

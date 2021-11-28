@@ -9,4 +9,5 @@ class Colors:
     RECTANGLE_OBJECT = (201, 104, 34)
     RECTANGLE_OBJECT_BORDER = (146, 59, 0)
     GREEN = (0, 255, 0)
-    PURPLE = (75,0,130)
+    RED = (255, 0, 0)
+    PURPLE = (75, 0, 130)
